@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/fragmentLogin">
+
+    <fragment
+        android:id="@+id/fragmentLogin"
+        android:name="com.example.weathermaps.FragmentLogin"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login">
+
+        <action
+            android:id="@+id/action_fragmentLogin_to_mapsFragment"
+            app:destination="@id/mapsFragment" />
+        <action
+            android:id="@+id/action_fragmentLogin_to_fragmentRegister"
+            app:destination="@id/fragmentRegister" />
+        <action
+            android:id="@+id/action_fragmentLogin_to_fragmentProfile2"
+            app:destination="@id/fragmentProfile2" />
+        <action
+            android:id="@+id/action_fragmentLogin_to_blankFragment"
+            app:destination="@id/blankFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentSignout"
+        android:name="com.example.weathermaps.FragmentLogin"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login"/>
+    <fragment
+        android:id="@+id/fragmentRegister"
+        android:name="com.example.weathermaps.FragmentRegister"
+        android:label="fragment_register"
+        tools:layout="@layout/fragment_register" />
+    <fragment
+        android:id="@+id/blankFragment"
+        android:name="com.example.weathermaps.BlankFragment"
+        android:label="fragment_blank"
+        tools:layout="@layout/fragment_blank" >
+        <action
+            android:id="@+id/action_blankFragment_to_fragmentProfile2"
+            app:destination="@id/fragmentProfile2" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentPost"
+        android:name="com.example.weathermaps.FragmentPost"
+        android:label="fragment_post"
+        tools:layout="@layout/fragment_post" >
+        <action
+            android:id="@+id/action_fragmentPost_to_fragmentAddPost"
+            app:destination="@id/fragmentAddPost" />
+    </fragment>
+    <fragment
+        android:id="@+id/mapsFragment"
+        android:name="com.example.weathermaps.MapsFragment"
+        android:label="fragment_maps"
+        tools:layout="@layout/fragment_maps" >
+        <action
+            android:id="@+id/action_mapsFragment_to_fragmentLogin"
+            app:destination="@id/fragmentLogin" />
+    </fragment>
+    <fragment
+        android:id="@+id/fragmentAddPost"
+        android:name="com.example.weathermaps.FragmentAddPost"
+        android:label="fragment_add_post"
+        tools:layout="@layout/fragment_add_post" />
+    <fragment
+        android:id="@+id/fragmentDetailPost"
+        android:name="com.example.weathermaps.FragmentDetailPost"
+        android:label="fragment_detail_post"
+        tools:layout="@layout/fragment_detail_post" />
+    <fragment
+        android:id="@+id/fragmenthoidap"
+        android:name="com.example.weathermaps.Fragmenthoidap"
+        android:label="fragment_hoidap"
+        tools:layout="@layout/fragment_hoidap" />
+
+    <fragment
+        android:id="@+id/fragmentPostName"
+        android:name="com.example.weathermaps.FragmentPostName"
+        android:label="fragment_post_name"
+        tools:layout="@layout/fragment_post_name" />
+    <fragment
+        android:id="@+id/fragmentProfile2"
+        android:name="com.example.weathermaps.FragmentProfile"
+        android:label="fragment_profile"
+        tools:layout="@layout/fragment_profile" >
+        <action
+            android:id="@+id/action_fragmentProfile2_to_blankFragment"
+            app:destination="@id/blankFragment" />
+    </fragment>
+</navigation>
