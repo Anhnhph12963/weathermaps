@@ -1,23 +1,27 @@
 package com.example.weathermaps
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
-import android.content.SharedPreferences
-import android.net.wifi.hotspot2.pps.Credential
+import android.media.MediaPlayer
 import android.os.Bundle
-import android.util.Log
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.example.weathermaps.databinding.DialogUpdateProfileBinding
 import com.example.weathermaps.databinding.FragmentLoginBinding
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -29,24 +33,30 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.UploadTask
+import com.squareup.picasso.Picasso
+import de.hdodenhof.circleimageview.CircleImageView
+import java.io.IOException
 
 class FragmentLogin : Fragment() {
     private lateinit var auth: FirebaseAuth
-
-    private lateinit var googleSignInAccount: GoogleSignInAccount
-
-    //    private lateinit var googleSignInOptions: GoogleSignInOptions
+    private var linkImage: String =
+        "https://img.freepik.com/free-photo/white-cloud-blue-sky_74190-7709.jpg"
+    private var nameUser = ""
+    private lateinit var storageReference: StorageReference
+    private var imageview: CircleImageView? = null
+    private val GALLERY = 1
+    private val CAMERA = 2
     private lateinit var firebaseUser: FirebaseUser
-    private lateinit var firebaseDatabase: FirebaseDatabase
-    private lateinit var googleAuthProvider: GoogleAuthProvider
-    private lateinit var credential: Credential
     private lateinit var databaseReference: DatabaseReference
-    private lateinit var sharedPreferences: SharedPreferences
     private lateinit var googleSignInClient: GoogleSignInClient
-
+    var imageUri: Intent ? = null
     private var binding: FragmentLoginBinding? = null
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentLoginBinding.inflate(layoutInflater)
@@ -57,7 +67,7 @@ class FragmentLogin : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         auth = Firebase.auth
         databaseReference = FirebaseDatabase.getInstance().getReference("User")
-
+        storageReference = FirebaseStorage.getInstance().reference.child("image")
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
@@ -67,7 +77,6 @@ class FragmentLogin : Fragment() {
         onClickView()
     }
 
-
     private fun onClickView() {
         binding?.apply {
             btnLogin.setOnClickListener { view ->
@@ -76,7 +85,6 @@ class FragmentLogin : Fragment() {
                 } else if (edtPassword.text.isNullOrEmpty()) {
                     edtPassword.error = "Bạn cần nhập Pass"
                 } else {
-
                     auth.signInWithEmailAndPassword(
                         edtUsername.text.toString(),
                         edtPassword.text.toString()
@@ -85,42 +93,20 @@ class FragmentLogin : Fragment() {
                             if (task.isSuccessful) {
                                 // Sign in success, update UI with the signed-in user's information
                                 if (auth.currentUser!!.isEmailVerified) {
-                                    databaseReference.child(auth.uid.toString())
-                                        .addValueEventListener(object : ValueEventListener {
-                                            override fun onDataChange(snapshot: DataSnapshot) {
-                                                if (!snapshot.exists()) {
-                                                    var bundle = Bundle()
-                                                    bundle.putString("imageLink","https://img.freepik.com/free-photo/white-cloud-blue-sky_74190-7709.jpg")
-                                                    bundle.putString("name", "Name")
-                                                    findNavController().navigate(R.id.fragmentProfile2, bundle)
-                                                    Toast.makeText(
-                                                        requireContext(),
-                                                        "Tạo tài khoản thành công",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                } else {
-                                                    findNavController().navigate(R.id.blankFragment)
-                                                    Toast.makeText(
-                                                        requireContext(),
-                                                        "Đăng nhập thành công",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                }
-                                            }
-
-                                            override fun onCancelled(error: DatabaseError) {
-                                            }
-                                        })
+                                    checkInformationUser()
                                 } else {
-                                    Toast.makeText(requireContext(), "Bạn chưa check verified trong mail", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Bạn chưa check verified trong mail",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
-
                             } else {
                                 // If sign in fails, display a message to the user.
                                 Toast.makeText(
                                     requireContext(),
                                     "Thông tin tài khoản không đúng !",
-                                    Toast.LENGTH_SHORT,
+                                    Toast.LENGTH_SHORT
                                 ).show()
                             }
                         }
@@ -128,14 +114,13 @@ class FragmentLogin : Fragment() {
             }
 
             btnDk.setOnClickListener {
-                findNavController().navigate(R.id.fragmentLogin)
+                findNavController().navigate(R.id.fragmentRegister)
             }
             imgGoogle.setOnClickListener {
                 signInGoogle()
             }
         }
     }
-
 
     private fun handleResults(task: Task<GoogleSignInAccount>) {
         if (task.isSuccessful) {
@@ -150,7 +135,7 @@ class FragmentLogin : Fragment() {
 
     private fun signInGoogle() {
         binding.apply {
-            googleSignInClient.signOut();
+            googleSignInClient.signOut()
             val signInIntent = googleSignInClient.signInIntent
             launcher.launch(signInIntent)
         }
@@ -163,40 +148,65 @@ class FragmentLogin : Fragment() {
                 handleResults(task)
             }
         }
+    private fun checkInformationUser() {
+        databaseReference.child(auth.uid.toString())
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (!snapshot.exists()) {
+                        showAlertDialogButtonClicked()
+                    } else {
+                        findNavController().navigate(R.id.action_fragmentLogin_to_blankFragment)
+                        Toast.makeText(requireContext(), "Đăng nhập thành công", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                }
+            })
+    }
+
+    private fun showAlertDialogButtonClicked() {
+        val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("Thêm thông tin !")
+        // set the custom layout
+        val bindingAlert: DialogUpdateProfileBinding =
+            DialogUpdateProfileBinding.inflate(LayoutInflater.from(context))
+        builder.setView(bindingAlert.root)
+        val dialog: AlertDialog = builder.create()
+        // Create an alert builder
+        bindingAlert.edtUsername.setText(nameUser)
+        Picasso.get().load(linkImage).fit().into(bindingAlert.imgProfile)
+        imageview = bindingAlert.imgProfile
+        bindingAlert.imgProfile.setOnClickListener { viewImg ->
+            choosePhotoFromGallary()
+        }
+        // add a button ok
+        bindingAlert.btnSave.setOnClickListener {
+            addInformationUser(
+                linkImage = linkImage,
+                bindingAlert.edtUsername,
+                bindingAlert.edtOld,
+                bindingAlert.edtLocation,
+                bindingAlert.edtPhone
+            )
+        }
+        bindingAlert.btnCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+        // create and show the alert dialog
+
+        dialog.show()
+    }
 
     private fun updateUI(googleSignInAccount: GoogleSignInAccount) {
         val credential = GoogleAuthProvider.getCredential(googleSignInAccount.idToken, null)
         auth.signInWithCredential(credential).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toast.makeText(requireContext(), "login success ", Toast.LENGTH_SHORT).show()
-
-                databaseReference.child(auth.uid.toString())
-                    .addValueEventListener(object : ValueEventListener {
-                        override fun onDataChange(snapshot: DataSnapshot) {
-                            if (!snapshot.exists()) {
-                                var bundle = Bundle()
-                                val url = googleSignInAccount.photoUrl.toString()
-                                bundle.putString("imageLink", url)
-                                bundle.putString("name", googleSignInAccount.displayName)
-                                findNavController().navigate(R.id.action_fragmentLogin_to_fragmentProfile2, bundle)
-                                Toast.makeText(
-                                    requireContext(),
-                                    "Tạo tài khoản thành công",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } else {
-                                findNavController().navigate(R.id.mapsFragment)
-                                Toast.makeText(
-                                    requireContext(),
-                                    "Đăng nhập thành công",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-
-                        override fun onCancelled(error: DatabaseError) {
-                        }
-                    })
+                linkImage = googleSignInAccount.photoUrl.toString()
+                nameUser = googleSignInAccount.displayName.toString()
+                checkInformationUser()
             } else {
                 Toast.makeText(
                     requireContext(),
@@ -205,7 +215,114 @@ class FragmentLogin : Fragment() {
                 ).show()
             }
         }
+    }
 
+    @SuppressLint("IntentReset")
+    private fun choosePhotoFromGallary() {
+        val galleryIntent = Intent(
+            Intent.ACTION_PICK,
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        )
+        galleryIntent.type = "image/*"
+        startActivityForResult(galleryIntent, GALLERY)
+    }
+    private fun saveImage(data: Intent?) {
+        storageReference.child(auth.uid.toString()).putFile(data?.data!!)
+            .addOnCompleteListener(object :
+                    MediaPlayer.OnCompletionListener,
+                    OnCompleteListener<UploadTask.TaskSnapshot> {
+                    override fun onCompletion(mp: MediaPlayer?) {
+                        TODO("Not yet implemented")
+                    }
+
+                    override fun onComplete(task: Task<UploadTask.TaskSnapshot>) {
+                        if (task.isSuccessful) {
+                            storageReference.child(auth.uid.toString()).downloadUrl.addOnCompleteListener {
+                                linkImage = it.result.toString()
+                            }
+                        }
+                    }
+                })
+    }
+    private fun addInformationUser(
+        linkImage: String,
+        edtUsername: EditText,
+        edtOld: EditText,
+        edtLocation: EditText,
+        edtPhone: EditText
+    ) {
+        firebaseUser = FirebaseAuth.getInstance().currentUser!!
+        val username = edtUsername.text.toString()
+        val old = edtOld.text.toString()
+        val location = edtLocation.text.toString()
+        val phone = edtPhone.text.toString()
+
+        if (username.isEmpty() || username.length < 3) {
+            edtUsername.error = " không hợp lệ"
+        } else if (old.isEmpty()) {
+            edtOld.error = "không được để trống"
+        } else if (location.isEmpty()) {
+            edtLocation.error = "không được để trống"
+        } else if (phone.isEmpty() || phone.length <= 9) {
+            edtPhone.error = "không được hợp lệ"
+        } else if (linkImage.isEmpty()) {
+            Toast.makeText(requireContext(), "Vui lòng chọn hình ảnh", Toast.LENGTH_SHORT)
+                .show()
+        } else {
+//                    progressDialog.setTitle("add setup profile");
+//                    progressDialog.setCanceledOnTouchOutside(false);
+//                    progressDialog.show();
+
+            val hashMap = HashMap<String, Any>()
+            hashMap.put("username", username)
+            hashMap.put("old", old)
+            hashMap.put("location", location)
+            hashMap.put("phone", phone)
+            hashMap.put("profileImage", linkImage)
+            hashMap.put("status", "offline")
+            databaseReference.child(firebaseUser.uid).setValue(hashMap)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        findNavController().navigate(R.id.action_fragmentLogin_to_blankFragment)
+//                                progressDialog.dismiss()
+                        Toast.makeText(
+                            requireContext(),
+                            "Setup profile complete",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            "Setup profile fail",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
+                }.addOnFailureListener { e ->
+//                            progressDialog.dismiss();
+                    Toast.makeText(requireContext(), e.toString(), Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == GALLERY) {
+            if (data != null) {
+                try {
+                    saveImage(data = data)
+                    Toast.makeText(requireContext(), "Image Saved!", Toast.LENGTH_SHORT).show()
+                    imageview!!.setImageURI(data.data)
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                    Toast.makeText(requireContext(), "Failed!", Toast.LENGTH_SHORT).show()
+                }
+            } else if (requestCode == CAMERA) {
+                imageUri = data
+                Toast.makeText(requireContext(), "Image Saved!", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }
-
