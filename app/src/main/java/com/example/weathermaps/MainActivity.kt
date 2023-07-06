@@ -14,12 +14,9 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.weathermaps.databinding.ActivityMainBinding
 import com.example.weathermaps.model.User
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuth.AuthStateListener
@@ -30,7 +27,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var user: User? = null
@@ -53,22 +49,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun initView() {
         // add bottom nav
         binding.apply {
-
             // thêm
             setSupportActionBar(appbar.appbar)
             supportActionBar!!.title = "App weather"
             supportActionBar!!.setDisplayHomeAsUpEnabled(true)
             supportActionBar!!.setHomeAsUpIndicator(R.drawable.ic_menu)
             val navController = findNavController(R.id.nav_host_fragment)
-            appBarConfiguration = AppBarConfiguration(
-                setOf(
-                    R.id.blankFragment,
-                    R.id.mapsFragment,
-                    R.id.fragmentProfile2,
-                    R.id.fragmentSignout
-                ), drawerlayout
-            )
-            setupActionBarWithNavController(navController, appBarConfiguration)
+
             navView.setupWithNavController(navController)
 //
             if (FirebaseAuth.getInstance().currentUser != null) {
@@ -87,7 +74,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //                }
             }
 
-
             // hide bottom nav when fragment not need
             navController.let {
                 navController.addOnDestinationChangedListener { _, des, _ ->
@@ -103,9 +89,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-
 //
-
 
     override fun onBackPressed() {
         if (binding.drawerlayout.isDrawerOpen(GravityCompat.START)) {
@@ -122,12 +106,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.fragmentSignout -> {
-
-                val intent = Intent(this, MainActivity::class.java)
+            R.id.fragmentLogin -> {
+                findNavController(R.id.fragmentLogin)
                 Firebase.auth.signOut()
-                startActivity(intent)
-
+                this.finish()
             }
 
             R.id.blankFragment -> {
@@ -157,8 +139,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.fragmentPostName -> {
                 findNavController(R.id.fragmentPostName)
             }
-
-
         }
         binding.drawerlayout.closeDrawer(GravityCompat.START)
         return true
@@ -166,9 +146,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-
+            android.R.id.home -> {
+                binding.drawerlayout.openDrawer(GravityCompat.START)
+            }
             R.id.fragmentSignout -> {
-
                 val alert: AlertDialog = AlertDialog.Builder(this).create()
                 alert.setTitle("Logout")
                 alert.setMessage("Are you sure you want to logout?")
@@ -191,5 +172,4 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         return super.onOptionsItemSelected(item)
     }
-
 }

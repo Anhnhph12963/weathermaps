@@ -22,14 +22,12 @@
             app:destination="@id/fragmentProfile2" />
         <action
             android:id="@+id/action_fragmentLogin_to_blankFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true"
             app:destination="@id/blankFragment" />
     </fragment>
 
-    <fragment
-        android:id="@+id/fragmentSignout"
-        android:name="com.example.weathermaps.FragmentLogin"
-        android:label="fragment_login"
-        tools:layout="@layout/fragment_login"/>
     <fragment
         android:id="@+id/fragmentRegister"
         android:name="com.example.weathermaps.FragmentRegister"

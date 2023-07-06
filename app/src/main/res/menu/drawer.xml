@@ -28,7 +28,7 @@
         android:icon="@drawable/ic_message"
         android:title="Các bài post của tôi" />
     <item
-        android:id="@+id/fragmentSignout"
+        android:id="@+id/fragmentLogin"
         android:icon="@drawable/ic_logout"
         android:title="Log out" />
 </menu>
