@@ -66,7 +66,7 @@ class FragmentLogin : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         auth = Firebase.auth
-        databaseReference = FirebaseDatabase.getInstance().getReference("User")
+        databaseReference =   FirebaseDatabase.getInstance().getReference("User")
         storageReference = FirebaseStorage.getInstance().reference.child("image")
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
@@ -155,9 +155,12 @@ class FragmentLogin : Fragment() {
                     if (!snapshot.exists()) {
                         showAlertDialogButtonClicked()
                     } else {
-                        findNavController().navigate(R.id.action_fragmentLogin_to_blankFragment)
-                        Toast.makeText(requireContext(), "Đăng nhập thành công", Toast.LENGTH_SHORT)
-                            .show()
+                        view?.post {
+                            findNavController().navigate(R.id.action_fragmentLogin_to_blankFragment)
+                            Toast.makeText(context, "Đăng nhập thành công", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+
                     }
                 }
 
@@ -190,6 +193,7 @@ class FragmentLogin : Fragment() {
                 bindingAlert.edtLocation,
                 bindingAlert.edtPhone
             )
+            dialog.dismiss()
         }
         bindingAlert.btnCancel.setOnClickListener {
             dialog.dismiss()
@@ -283,17 +287,19 @@ class FragmentLogin : Fragment() {
             databaseReference.child(firebaseUser.uid).setValue(hashMap)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        findNavController().navigate(R.id.action_fragmentLogin_to_blankFragment)
+                        view?.post {
+                            findNavController().navigate(R.id.action_fragmentLogin_to_blankFragment)
+                            Toast.makeText(
+                                context,
+                                "Setup profile complete",
+                                Toast.LENGTH_SHORT
+                            )
+                                .show()
+                        }
 //                                progressDialog.dismiss()
-                        Toast.makeText(
-                            requireContext(),
-                            "Setup profile complete",
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
                     } else {
                         Toast.makeText(
-                            requireContext(),
+                            context,
                             "Setup profile fail",
                             Toast.LENGTH_SHORT
                         )
