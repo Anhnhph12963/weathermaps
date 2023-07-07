@@ -57,21 +57,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val navController = findNavController(R.id.nav_host_fragment)
 
             navView.setupWithNavController(navController)
-//
             if (FirebaseAuth.getInstance().currentUser != null) {
-//                FirebaseDatabase.getInstance().getReference("User").child(FirebaseAuth.getInstance().currentUser!!.uid).get().addOnCompleteListener {
-//                    if (it.isSuccessful){
-//                        user = it.result.getValue(User::class.java)
-//                    }else{
-//                        Log.d("TAG", "${it.exception?.message}")
-//                    }
-//                }
-//               if(user!=null){
-//                   Log.d("ABCD", "initView: "+user!!.profileImage.toString())
-//                    navView.getHeaderView(0).findViewById<TextView>(R.id.tv_username).text = user!!.username
-//                    val imageView  = navView.getHeaderView(0).findViewById<CircleImageView>(R.id.profileimage)
-//                    Picasso.get().load(user!!.profileImage).fit().into(imageView)
-//                }
+
             }
 
             // hide bottom nav when fragment not need

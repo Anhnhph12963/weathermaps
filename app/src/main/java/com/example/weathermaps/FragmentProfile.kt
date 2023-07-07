@@ -113,7 +113,7 @@ class FragmentProfile : Fragment() {
                             override fun onComplete(task: Task<UploadTask.TaskSnapshot>) {
                                 if (task.isSuccessful) {
                                     storageReference.child(firebaseUser.uid).downloadUrl.addOnCompleteListener {
-                                        linkImage = it.toString()
+                                        linkImage = it.result.toString()
                                     }
                                 }
                             }

@@ -12,15 +12,6 @@
         tools:layout="@layout/fragment_login">
 
         <action
-            android:id="@+id/action_fragmentLogin_to_mapsFragment"
-            app:destination="@id/mapsFragment" />
-        <action
-            android:id="@+id/action_fragmentLogin_to_fragmentRegister"
-            app:destination="@id/fragmentRegister" />
-        <action
-            android:id="@+id/action_fragmentLogin_to_fragmentProfile2"
-            app:destination="@id/fragmentProfile2" />
-        <action
             android:id="@+id/action_fragmentLogin_to_blankFragment"
             app:launchSingleTop="true"
             app:popUpTo="@id/nav_graph"
