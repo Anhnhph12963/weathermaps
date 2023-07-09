@@ -3,7 +3,9 @@ package com.example.weathermaps
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context.MODE_PRIVATE
 import android.content.Intent
+import android.content.SharedPreferences
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.provider.MediaStore
@@ -17,6 +19,8 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.weathermaps.databinding.DialogUpdateProfileBinding
 import com.example.weathermaps.databinding.FragmentLoginBinding
+import com.example.weathermaps.model.User
+import com.example.weathermaps.model.UserSave
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -41,6 +45,7 @@ import de.hdodenhof.circleimageview.CircleImageView
 import java.io.IOException
 
 class FragmentLogin : Fragment() {
+    private var PREFERENCE_FILE_KEY = "SavePreference"
     private lateinit var auth: FirebaseAuth
     private var linkImage: String =
         "https://img.freepik.com/free-photo/white-cloud-blue-sky_74190-7709.jpg"
@@ -66,7 +71,7 @@ class FragmentLogin : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         auth = Firebase.auth
-        databaseReference =   FirebaseDatabase.getInstance().getReference("User")
+        databaseReference = FirebaseDatabase.getInstance().getReference("User")
         storageReference = FirebaseStorage.getInstance().reference.child("image")
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
@@ -132,7 +137,6 @@ class FragmentLogin : Fragment() {
             Toast.makeText(requireContext(), task.exception.toString(), Toast.LENGTH_SHORT).show()
         }
     }
-
     private fun signInGoogle() {
         binding.apply {
             googleSignInClient.signOut()
@@ -156,14 +160,16 @@ class FragmentLogin : Fragment() {
                         showAlertDialogButtonClicked()
                     } else {
                         view?.post {
+                            val userGet: User = snapshot.getValue(User::class.java)!!
+                            val sharedPref: SharedPreferences = context!!.getSharedPreferences(PREFERENCE_FILE_KEY, MODE_PRIVATE)
+                            val user = UserSave(username = userGet.username, imageLink = userGet.profileImage, sharedPref)
+                            user.Save()
                             findNavController().navigate(R.id.action_fragmentLogin_to_blankFragment)
                             Toast.makeText(context, "Đăng nhập thành công", Toast.LENGTH_SHORT)
                                 .show()
                         }
-
                     }
                 }
-
                 override fun onCancelled(error: DatabaseError) {
                 }
             })
@@ -172,19 +178,16 @@ class FragmentLogin : Fragment() {
     private fun showAlertDialogButtonClicked() {
         val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
         builder.setTitle("Thêm thông tin !")
-        // set the custom layout
         val bindingAlert: DialogUpdateProfileBinding =
             DialogUpdateProfileBinding.inflate(LayoutInflater.from(context))
         builder.setView(bindingAlert.root)
         val dialog: AlertDialog = builder.create()
-        // Create an alert builder
         bindingAlert.edtUsername.setText(nameUser)
         Picasso.get().load(linkImage).fit().into(bindingAlert.imgProfile)
         imageview = bindingAlert.imgProfile
         bindingAlert.imgProfile.setOnClickListener { viewImg ->
             choosePhotoFromGallary()
         }
-        // add a button ok
         bindingAlert.btnSave.setOnClickListener {
             addInformationUser(
                 linkImage = linkImage,
@@ -198,8 +201,6 @@ class FragmentLogin : Fragment() {
         bindingAlert.btnCancel.setOnClickListener {
             dialog.dismiss()
         }
-        // create and show the alert dialog
-
         dialog.show()
     }
 
@@ -236,7 +237,6 @@ class FragmentLogin : Fragment() {
                     MediaPlayer.OnCompletionListener,
                     OnCompleteListener<UploadTask.TaskSnapshot> {
                     override fun onCompletion(mp: MediaPlayer?) {
-                        TODO("Not yet implemented")
                     }
 
                     override fun onComplete(task: Task<UploadTask.TaskSnapshot>) {
@@ -273,10 +273,6 @@ class FragmentLogin : Fragment() {
             Toast.makeText(requireContext(), "Vui lòng chọn hình ảnh", Toast.LENGTH_SHORT)
                 .show()
         } else {
-//                    progressDialog.setTitle("add setup profile");
-//                    progressDialog.setCanceledOnTouchOutside(false);
-//                    progressDialog.show();
-
             val hashMap = HashMap<String, Any>()
             hashMap.put("username", username)
             hashMap.put("old", old)
@@ -288,6 +284,9 @@ class FragmentLogin : Fragment() {
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         view?.post {
+                            val sharedPref: SharedPreferences = requireContext().getSharedPreferences(PREFERENCE_FILE_KEY, MODE_PRIVATE)
+                            val user = UserSave(username = username, imageLink = linkImage, sharedPref)
+                            user.Save()
                             findNavController().navigate(R.id.action_fragmentLogin_to_blankFragment)
                             Toast.makeText(
                                 context,
@@ -296,7 +295,6 @@ class FragmentLogin : Fragment() {
                             )
                                 .show()
                         }
-//                                progressDialog.dismiss()
                     } else {
                         Toast.makeText(
                             context,
@@ -306,7 +304,6 @@ class FragmentLogin : Fragment() {
                             .show()
                     }
                 }.addOnFailureListener { e ->
-//                            progressDialog.dismiss();
                     Toast.makeText(requireContext(), e.toString(), Toast.LENGTH_SHORT).show()
                 }
         }

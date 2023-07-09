@@ -1,43 +1,35 @@
 package com.example.weathermaps
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentTransaction
 import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.example.weathermaps.databinding.ActivityMainBinding
-import com.example.weathermaps.model.User
+import com.example.weathermaps.model.UserSave
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuth.AuthStateListener
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-    private var user: User? = null
-    private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var firebaseAuth: FirebaseAuth
-    private lateinit var firebaseUser: FirebaseUser
+    private var PREFERENCE_FILE_KEY = "SavePreference"
     private lateinit var binding: ActivityMainBinding
-    private lateinit var intent: Intent
-    private var mAuthListener: AuthStateListener? = null
-    var fragmentManager: FragmentManager? = null
-    var fragmentTransaction: FragmentTransaction? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,10 +49,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val navController = findNavController(R.id.nav_host_fragment)
 
             navView.setupWithNavController(navController)
+
             if (FirebaseAuth.getInstance().currentUser != null) {
-
             }
-
             // hide bottom nav when fragment not need
             navController.let {
                 navController.addOnDestinationChangedListener { _, des, _ ->
@@ -134,6 +125,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
+                val PREFERENCE_FILE_KEY = "SavePreference"
+                val sharedPref: SharedPreferences = applicationContext.getSharedPreferences(PREFERENCE_FILE_KEY, MODE_PRIVATE)
+                val user = UserSave("", "", sharedPref)
+                val tv = binding.navView.getHeaderView(0).findViewById<TextView>(R.id.tv_username)
+                val image =
+                    binding.navView.getHeaderView(0).findViewById<ImageView>(R.id.profileimage)
+                tv.setText(user.loadName())
+                Picasso.get().load(user.loadImage()).fit().into(image)
                 binding.drawerlayout.openDrawer(GravityCompat.START)
             }
             R.id.fragmentSignout -> {
