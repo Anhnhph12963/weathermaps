@@ -13,7 +13,6 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import com.example.weathermaps.databinding.FragmentProfileBinding
 import com.example.weathermaps.model.User
 import com.google.android.gms.tasks.OnCompleteListener
@@ -32,15 +31,11 @@ class FragmentProfile : Fragment() {
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var firebaseUser: FirebaseUser
     private lateinit var databaseReference: DatabaseReference
-    private lateinit var storageReference: StorageReference
-    private lateinit var progressDialog: ProgressDialog
-    private lateinit var progressBar: ProgressBar
-    private lateinit var intent: Intent
-    private lateinit var bundle: Bundle
+    lateinit var storageReference: StorageReference
+    private var progressDialog: ProgressDialog? = null
     private var linkImage: String =
         "https://img.freepik.com/free-photo/white-cloud-blue-sky_74190-7709.jpg"
     private var binding: FragmentProfileBinding? = null
-    private lateinit var picasso: Picasso
     private var imageUri: Intent? = null
 
     override fun onCreateView(
@@ -58,33 +53,21 @@ class FragmentProfile : Fragment() {
         firebaseAuth = FirebaseAuth.getInstance()
         firebaseUser = firebaseAuth.currentUser!!
         progressDialog = ProgressDialog(requireContext())
-        databaseReference = FirebaseDatabase.getInstance().reference.child("User")
+        databaseReference = FirebaseDatabase.getInstance().reference.child(/* pathString = */ "User")
         storageReference = FirebaseStorage.getInstance().reference.child("image")
         binding?.apply {
-            if (arguments != null) {
-                arguments?.let { data ->
-                    linkImage = data.getString(
-                        "imageLink",
-                        "https://img.freepik.com/free-photo/white-cloud-blue-sky_74190-7709.jpg"
-                    )
-                    val name: String = data.getString("name", "")
-                    edtUsername.setText(name)
-                }
-            } else {
-                databaseReference.child(firebaseUser.uid).get().addOnCompleteListener {
-                    if (it.isSuccessful) {
-                        val userModel = it.result.getValue(User::class.java)
-                        if (userModel != null) {
-                            Picasso.get().load(userModel!!.profileImage).fit().into(imgProfile)
-                            edtUsername.setText(userModel.username)
-                            edtLocation.setText(userModel.location)
-                            edtOld.setText(userModel.old)
-                            edtPhone.setText(userModel.phone)
-                        }
+            databaseReference.child(firebaseUser.uid).get().addOnCompleteListener {
+                if (it.isSuccessful) {
+                    val userModel = it.result.getValue(User::class.java)
+                    if (userModel != null) {
+                        Picasso.get().load(userModel.profileImage).fit().into(imgProfile)
+                        edtUsername.setText(userModel.username)
+                        edtLocation.setText(userModel.location)
+                        edtOld.setText(userModel.old)
+                        edtPhone.setText(userModel.phone)
                     }
                 }
             }
-
             Picasso.get().load(linkImage).fit().into(imgProfile)
             imgProfile.setOnClickListener {
                 val intent = Intent(Intent.ACTION_GET_CONTENT)
@@ -128,23 +111,23 @@ class FragmentProfile : Fragment() {
             val location = edtLocation.text.toString()
             val phone = edtPhone.text.toString()
 
-            if (username.isNullOrEmpty() || username.length < 3) {
+            if (username.isEmpty() || username.length < 3) {
                 edtUsername.error = " không hợp lệ"
-            } else if (old.isNullOrEmpty()) {
+            } else if (old.isEmpty()) {
                 edtOld.error = "không được để trống"
-            } else if (location.isNullOrEmpty()) {
+            } else if (location.isEmpty()) {
                 edtLocation.error = "không được để trống"
-            } else if (phone.isNullOrEmpty() || phone.length <= 9) {
+            } else if (phone.isEmpty() || phone.length <= 9) {
                 edtPhone.error = "không được hợp lệ"
-            } else if (linkImage.isNullOrEmpty()) {
+            } else if (linkImage.isEmpty()) {
                 Toast.makeText(requireContext(), "Vui lòng chọn hình ảnh", Toast.LENGTH_SHORT)
                     .show()
             } else {
-                progressDialog.setTitle("add setup profile")
-                progressDialog.setCanceledOnTouchOutside(false)
-                progressDialog.show()
+                progressDialog?.setTitle("add setup profile")
+                progressDialog?.setCanceledOnTouchOutside(false)
+                progressDialog?.show()
 
-                var hashMap = HashMap<String, Any>()
+                val hashMap = HashMap<String, Any>()
                 hashMap.put("username", username)
                 hashMap.put("old", old)
                 hashMap.put("location", location)
@@ -154,7 +137,7 @@ class FragmentProfile : Fragment() {
                 databaseReference.child(firebaseUser.uid).setValue(hashMap)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            progressDialog.dismiss()
+                            progressDialog?.dismiss()
                             Toast.makeText(
                                 requireContext(),
                                 "Setup profile complete",
@@ -163,7 +146,7 @@ class FragmentProfile : Fragment() {
                                 .show()
                         }
                     }.addOnFailureListener { e ->
-                        progressDialog.dismiss()
+                        progressDialog?.dismiss()
                         Toast.makeText(requireContext(), e.toString(), Toast.LENGTH_SHORT).show()
                     }
             }
