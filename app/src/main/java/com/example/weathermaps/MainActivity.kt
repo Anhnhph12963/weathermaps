@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.weathermaps.databinding.ActivityMainBinding
@@ -36,6 +37,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initView()
+        onclick()
     }
 
     private fun initView() {
@@ -49,7 +51,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val navController = findNavController(R.id.nav_host_fragment)
 
             navView.setupWithNavController(navController)
-
+            binding.appbar.imgFile.setOnClickListener {
+                Toast.makeText(applicationContext, "Onclick", Toast.LENGTH_SHORT).show()
+            }
             if (FirebaseAuth.getInstance().currentUser != null) {
             }
             // hide bottom nav when fragment not need
@@ -64,6 +68,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     }
                 }
             }
+        }
+    }
+
+    private fun onclick() {
+        binding.apply {
+
         }
     }
 
@@ -117,6 +127,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.fragmentPostName -> {
                 findNavController(R.id.fragmentPostName)
             }
+
+            R.id.fragmentAddPost -> {
+                Toast.makeText(this@MainActivity, "fragment add post", Toast.LENGTH_SHORT).show()
+                findNavController(R.id.fragmentAddPost)
+            }
         }
         binding.drawerlayout.closeDrawer(GravityCompat.START)
         return true
@@ -126,20 +141,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (item.itemId) {
             android.R.id.home -> {
                 val PREFERENCE_FILE_KEY = "SavePreference"
-                val sharedPref: SharedPreferences = applicationContext.getSharedPreferences(PREFERENCE_FILE_KEY, MODE_PRIVATE)
+                val sharedPref: SharedPreferences =
+                    applicationContext.getSharedPreferences(PREFERENCE_FILE_KEY, MODE_PRIVATE)
                 val user = UserSave("", "", sharedPref)
                 val tv = binding.navView.getHeaderView(0).findViewById<TextView>(R.id.tv_username)
                 val image =
                     binding.navView.getHeaderView(0).findViewById<ImageView>(R.id.profileimage)
-                tv.setText(user.loadName())
+                tv.text = user.loadName()
                 Picasso.get().load(user.loadImage()).fit().into(image)
                 binding.drawerlayout.openDrawer(GravityCompat.START)
             }
+
             R.id.fragmentSignout -> {
                 val alert: AlertDialog = AlertDialog.Builder(this).create()
                 alert.setTitle("Logout")
                 alert.setMessage("Are you sure you want to logout?")
-                alert.setButton(AlertDialog.BUTTON_POSITIVE, "Yes") { dialog, which ->
+                alert.setButton(AlertDialog.BUTTON_POSITIVE, "Yes") { dialog, _ ->
                     CoroutineScope(Dispatchers.IO).launch {
                         withContext(Dispatchers.Main) {
                             Firebase.auth.signOut()
@@ -149,7 +166,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     dialog.dismiss()
                     startActivity(intent)
                 }
-                alert.setButton(AlertDialog.BUTTON_NEGATIVE, "No") { dialog, which ->
+                alert.setButton(AlertDialog.BUTTON_NEGATIVE, "No") { dialog, _ ->
                     dialog.dismiss()
                 }
                 alert.show()

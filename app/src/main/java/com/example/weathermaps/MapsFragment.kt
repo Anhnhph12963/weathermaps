@@ -17,6 +17,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -63,6 +64,7 @@ class MapsFragment : Fragment(), GoogleMap.OnMyLocationButtonClickListener,
     var currentLocation: Location? = null
     private val FINE_PERMISSION_CODE = 1
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
+
 
     private lateinit var mLastLocation: Location
     private var mCurrLocationMarker: Marker? = null
@@ -334,20 +336,14 @@ class MapsFragment : Fragment(), GoogleMap.OnMyLocationButtonClickListener,
                 dialog.setContentView(R.layout.dialog_quality_weather)
                 dialog.window!!.attributes = layoutParams
                 addListCommentDialogQW()
-                //                locationDetailses.add(new LocationDetails(marker.getId(), location_right, location_left, city, Double.parseDouble(deg), Double.parseDouble(speed)));
-//                for (int i = 0; i<locationDetailses.size(); i++) {
-//                    //matching id so, alert dialog can show specific data
-//                    if (marker.getId().equals(locationDetailses.get(i).getMarkerID())){
-//                        builder.setTitle("City: "+locationDetailses.get(i).getCity());
-//                        builder.setMessage("Wind Speed: "+locationDetailses.get(i).getSpeed()+"\n"+"Degree: "+locationDetailses.get(i).getDeg()+"\n"+"We can plant WindMill here");
-//                    }}
+
                 val recyclerView1 = dialog.findViewById<RecyclerView>(R.id.ryc_comment_quality)
                 val adapter = QualityWeatherAdapter(lstCommentModel)
                 recyclerView1.adapter = adapter
                 adapter.notifyDataSetChanged()
 
-                val img_news = dialog.findViewById<ImageView>(R.id.img_news)
-                img_news.setImageResource(R.drawable.abc)
+//                val img_news = dialog.findViewById<ImageView>(R.id.img_news)
+//                img_news.setImageResource(R.drawable.abc)
                 val tv_number_IAQ = dialog.findViewById<TextView>(R.id.tv_number_IAQ)
                 tv_number_IAQ.text = "1000"
                 val tv_number_date = dialog.findViewById<TextView>(R.id.tv_number_date)
@@ -360,9 +356,9 @@ class MapsFragment : Fragment(), GoogleMap.OnMyLocationButtonClickListener,
                 val tv_number_evaluate = dialog.findViewById<TextView>(R.id.tv_number_evaluate)
                 tv_number_evaluate.text = "Có thể có bão to"
                 val tv_number_news = dialog.findViewById<TextView>(R.id.tv_number_news)
-                tv_number_news.text = "Sóng thần sắp đến"
-                val tv_see = dialog.findViewById<TextView>(R.id.tv_see)
-                tv_see.setOnClickListener(View.OnClickListener { })
+                tv_number_news.text = "Đốt rơm rạ tại Gia Lâm Cập nhật lúc : 06/06/2023 16:05"
+//                val tv_see = dialog.findViewById<TextView>(R.id.tv_see)
+//                tv_see.setOnClickListener(View.OnClickListener { })
 
 
 //                Button dialogButton = (Button) dialog.findViewById(R.id.btn_dialog);
@@ -455,42 +451,42 @@ class MapsFragment : Fragment(), GoogleMap.OnMyLocationButtonClickListener,
         lstCommentModel = ArrayList<CommentQualityModel>()
         (lstCommentModel as ArrayList<CommentQualityModel>).add(
             CommentQualityModel(
-                "hello1",
-                "hello2",
+                "Huy",
+                "Hay",
                 "10/02/2001"
             )
         )
         (lstCommentModel as ArrayList<CommentQualityModel>).add(
             CommentQualityModel(
-                "hello1",
-                "hello2",
+                "Nam",
+                "Tot",
                 "10/02/2001"
             )
         )
         (lstCommentModel as ArrayList<CommentQualityModel>).add(
             CommentQualityModel(
-                "hello1",
-                "hello2",
+                "Tue",
+                "Mom",
                 "10/02/2001"
             )
         )
         (lstCommentModel as ArrayList<CommentQualityModel>).add(
             CommentQualityModel(
-                "hello1",
-                "hello2",
+                "Son",
+                "saddada",
                 "10/02/2001"
             )
         )
         (lstCommentModel as ArrayList<CommentQualityModel>).add(
             CommentQualityModel(
-                "hello1",
-                "hello2",
+                "Long",
+                "sdds",
                 "10/02/2001"
             )
         )
         (lstCommentModel as ArrayList<CommentQualityModel>).add(
             CommentQualityModel(
-                "hello1",
+                "Dat",
                 "hello2",
                 "10/02/2001"
             )

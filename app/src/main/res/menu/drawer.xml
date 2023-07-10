@@ -27,6 +27,12 @@
         android:id="@+id/fragmentPostName"
         android:icon="@drawable/ic_message"
         android:title="Các bài post của tôi" />
+
+    <item
+        android:id="@+id/fragmentAddPost"
+        android:icon="@drawable/ic_message"
+        android:title="Add Post" />
+
     <item
         android:id="@+id/fragmentLogin"
         android:icon="@drawable/ic_logout"
