@@ -28,6 +28,7 @@ data class PostsAddAdapter(var mPostModel: List<PostModel>? = null) :
         }
     }
 
+
     override fun getItemCount(): Int {
         return mPostModel!!.size
     }
