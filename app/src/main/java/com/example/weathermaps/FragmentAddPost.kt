@@ -16,12 +16,15 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.DatePicker
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.TimePicker
 import android.widget.Toast
+import android.widget.Toolbar
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weathermaps.databinding.FragmentAddPostBinding
 import com.example.weathermaps.model.PostModel
@@ -53,15 +56,14 @@ class FragmentAddPost : Fragment(), DatePickerDialog.OnDateSetListener,
     private lateinit var recyclerView: RecyclerView
     private lateinit var uri: Uri
     private lateinit var calendar: Calendar
- //   private lateinit var progressDialog: ProgressDialog
+    //   private lateinit var progressDialog: ProgressDialog
+
+    private lateinit var mainActivity: MainActivity
+    private lateinit var toolbar: Toolbar
 
     private var linkImage: String = ""
     private var latLngArrayList = mutableListOf<LatLng>()
     private var locationNameArraylist = mutableListOf<String>()
-
-
-    private lateinit var date: Date
-    private lateinit var simpleDateFormat: SimpleDateFormat
 
     var day = 0
     var month: Int = 0
@@ -85,6 +87,7 @@ class FragmentAddPost : Fragment(), DatePickerDialog.OnDateSetListener,
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
 
         firebaseAuth = FirebaseAuth.getInstance()
         databaseReference = FirebaseDatabase.getInstance().reference.child("User")
@@ -205,12 +208,14 @@ class FragmentAddPost : Fragment(), DatePickerDialog.OnDateSetListener,
             val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.type = "image/*"
             launcher.launch(intent)
+            ImageView.ScaleType.CENTER
         }
-            SaveData()
+
+        SaveData()
 
 
     }
-    //postmodel   -  gettitile,getcontent,getlocation,gettime(calander),getimage(listimage)(string,)r
+
     private fun SaveData() {
         binding?.apply {
             btnSave.setOnClickListener {
@@ -227,21 +232,15 @@ class FragmentAddPost : Fragment(), DatePickerDialog.OnDateSetListener,
                     databaseReferencePost.push().setValue(hashMap)
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
-                            //    progressDialog?.dismiss()
-                                Toast.makeText(
-                                    requireContext(),
-                                    "Setup profile complete",
-                                    Toast.LENGTH_SHORT
-                                )
-                                    .show()
+                                //    progressDialog?.dismiss()
+                                Toast.makeText(requireContext(),"Setup profile complete",Toast.LENGTH_SHORT).show()
+                                findNavController().navigate(R.id.fragmentPost)
                             }
                         }.addOnFailureListener { e ->
-                       //     progressDialog?.dismiss()
+                            //     progressDialog?.dismiss()
                             Toast.makeText(requireContext(), e.toString(), Toast.LENGTH_SHORT)
                                 .show()
                         }
-
-
                 }
             }
         }
@@ -280,7 +279,8 @@ class FragmentAddPost : Fragment(), DatePickerDialog.OnDateSetListener,
         myHour = hourOfDay
         myMinute = minute
         binding?.spnDate?.text =
-            "Year:  $myYear  Month: $myMonth  Day: $myDay  Hour: $myHour Minute: $myMinute"
+            "$myYear/$myMonth/$myDay  $myHour:$myMinute"
+        //      "Year:  $myYear  Month: $myMonth  Day: $myDay  Hour: $myHour Minute: $myMinute"
     }
 
     private val launcher =

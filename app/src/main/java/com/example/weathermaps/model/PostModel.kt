@@ -1,10 +1,10 @@
 package com.example.weathermaps.model
 
 data class PostModel(
-    var usernamePost: String = "",
-    var titlePost: String = "",
-    var contentPost: String = "",
-    var locationPost: String = "",
-    var datePost: String = "",
-    var imagePost: List<String>? = null,
+//    var usernamePost: String = "",
+    var title: String = "",
+//    var contentPost: String = "",
+    var location: String = "",
+    var date: String = "",
+    var imagePost: String = "",
 )

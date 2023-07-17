@@ -11,13 +11,28 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.recyclerview.widget.RecyclerView
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/search_post"
+            android:layout_marginTop="4dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/bg_search_maps"
+            android:elevation="5dp"
+            android:theme="@style/SearchView"
             android:layout_marginHorizontal="4dp"
-            android:layout_marginTop="8dp"
-            android:background="@color/white"
+            app:iconifiedByDefault="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:queryHint="search" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintTop_toBottomOf="@+id/search_post"
             tools:listitem="@layout/item_ryc_post" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
