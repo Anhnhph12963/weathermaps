@@ -57,7 +57,7 @@ class FragmentLogin : Fragment() {
     private lateinit var firebaseUser: FirebaseUser
     private lateinit var databaseReference: DatabaseReference
     private lateinit var googleSignInClient: GoogleSignInClient
-    var imageUri: Intent ? = null
+    var imageUri: Intent? = null
     private var binding: FragmentLoginBinding? = null
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -137,6 +137,7 @@ class FragmentLogin : Fragment() {
             Toast.makeText(requireContext(), task.exception.toString(), Toast.LENGTH_SHORT).show()
         }
     }
+
     private fun signInGoogle() {
         binding.apply {
             googleSignInClient.signOut()
@@ -152,6 +153,7 @@ class FragmentLogin : Fragment() {
                 handleResults(task)
             }
         }
+
     private fun checkInformationUser() {
         databaseReference.child(auth.uid.toString())
             .addValueEventListener(object : ValueEventListener {
@@ -161,8 +163,13 @@ class FragmentLogin : Fragment() {
                     } else {
                         view?.post {
                             val userGet: User = snapshot.getValue(User::class.java)!!
-                            val sharedPref: SharedPreferences = context!!.getSharedPreferences(PREFERENCE_FILE_KEY, MODE_PRIVATE)
-                            val user = UserSave(username = userGet.username, imageLink = userGet.profileImage, sharedPref)
+                            val sharedPref: SharedPreferences =
+                                context!!.getSharedPreferences(PREFERENCE_FILE_KEY, MODE_PRIVATE)
+                            val user = UserSave(
+                                username = userGet.username,
+                                imageLink = userGet.profileImage,
+                                sharedPref
+                            )
                             user.Save()
                             findNavController().navigate(R.id.action_fragmentLogin_to_blankFragment)
                             Toast.makeText(context, "Đăng nhập thành công", Toast.LENGTH_SHORT)
@@ -170,6 +177,7 @@ class FragmentLogin : Fragment() {
                         }
                     }
                 }
+
                 override fun onCancelled(error: DatabaseError) {
                 }
             })
@@ -231,23 +239,25 @@ class FragmentLogin : Fragment() {
         galleryIntent.type = "image/*"
         startActivityForResult(galleryIntent, GALLERY)
     }
+
     private fun saveImage(data: Intent?) {
         storageReference.child(auth.uid.toString()).putFile(data?.data!!)
             .addOnCompleteListener(object :
-                    MediaPlayer.OnCompletionListener,
-                    OnCompleteListener<UploadTask.TaskSnapshot> {
-                    override fun onCompletion(mp: MediaPlayer?) {
-                    }
+                MediaPlayer.OnCompletionListener,
+                OnCompleteListener<UploadTask.TaskSnapshot> {
+                override fun onCompletion(mp: MediaPlayer?) {
+                }
 
-                    override fun onComplete(task: Task<UploadTask.TaskSnapshot>) {
-                        if (task.isSuccessful) {
-                            storageReference.child(auth.uid.toString()).downloadUrl.addOnCompleteListener {
-                                linkImage = it.result.toString()
-                            }
+                override fun onComplete(task: Task<UploadTask.TaskSnapshot>) {
+                    if (task.isSuccessful) {
+                        storageReference.child(auth.uid.toString()).downloadUrl.addOnCompleteListener {
+                            linkImage = it.result.toString()
                         }
                     }
-                })
+                }
+            })
     }
+
     private fun addInformationUser(
         linkImage: String,
         edtUsername: EditText,
@@ -265,27 +275,34 @@ class FragmentLogin : Fragment() {
             edtUsername.error = " không hợp lệ"
         } else if (old.isEmpty()) {
             edtOld.error = "không được để trống"
-        } else if (location.isEmpty()) {
+        }  else if (phone.isEmpty()) {
+            edtPhone.error = "không được để trống"
+        } else if (phone.length <= 9) {
+            edtPhone.error = "không đúng định dạng"
+        }else if (location.isEmpty()) {
             edtLocation.error = "không được để trống"
-        } else if (phone.isEmpty() || phone.length <= 9) {
-            edtPhone.error = "không được hợp lệ"
-        } else if (linkImage.isEmpty()) {
+        }else if (linkImage.isEmpty()) {
             Toast.makeText(requireContext(), "Vui lòng chọn hình ảnh", Toast.LENGTH_SHORT)
                 .show()
         } else {
             val hashMap = HashMap<String, Any>()
-            hashMap.put("username", username)
-            hashMap.put("old", old)
-            hashMap.put("location", location)
-            hashMap.put("phone", phone)
-            hashMap.put("profileImage", linkImage)
-            hashMap.put("status", "offline")
+            hashMap["username"] = username
+            hashMap["old"] = old
+            hashMap["location"] = location
+            hashMap["phone"] = phone
+            hashMap["profileImage"] = linkImage
+            hashMap["status"] = "offline"
             databaseReference.child(firebaseUser.uid).setValue(hashMap)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         view?.post {
-                            val sharedPref: SharedPreferences = requireContext().getSharedPreferences(PREFERENCE_FILE_KEY, MODE_PRIVATE)
-                            val user = UserSave(username = username, imageLink = linkImage, sharedPref)
+                            val sharedPref: SharedPreferences =
+                                requireContext().getSharedPreferences(
+                                    PREFERENCE_FILE_KEY,
+                                    MODE_PRIVATE
+                                )
+                            val user =
+                                UserSave(username = username, imageLink = linkImage, sharedPref)
                             user.Save()
                             findNavController().navigate(R.id.action_fragmentLogin_to_blankFragment)
                             Toast.makeText(

@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -53,7 +52,8 @@ class FragmentProfile : Fragment() {
         firebaseAuth = FirebaseAuth.getInstance()
         firebaseUser = firebaseAuth.currentUser!!
         progressDialog = ProgressDialog(requireContext())
-        databaseReference = FirebaseDatabase.getInstance().reference.child(/* pathString = */ "User")
+        databaseReference =
+            FirebaseDatabase.getInstance().reference.child(/* pathString = */ "User")
         storageReference = FirebaseStorage.getInstance().reference.child("image")
         binding?.apply {
             databaseReference.child(firebaseUser.uid).get().addOnCompleteListener {
@@ -87,20 +87,20 @@ class FragmentProfile : Fragment() {
                 binding?.imgProfile?.setImageURI(imageUri?.data)
                 storageReference.child(firebaseUser.uid).putFile(imageUri?.data!!)
                     .addOnCompleteListener(object :
-                            OnCompletionListener,
-                            OnCompleteListener<UploadTask.TaskSnapshot> {
-                            override fun onCompletion(mp: MediaPlayer?) {
-                                TODO("Not yet implemented")
-                            }
+                        OnCompletionListener,
+                        OnCompleteListener<UploadTask.TaskSnapshot> {
+                        override fun onCompletion(mp: MediaPlayer?) {
+                            TODO("Not yet implemented")
+                        }
 
-                            override fun onComplete(task: Task<UploadTask.TaskSnapshot>) {
-                                if (task.isSuccessful) {
-                                    storageReference.child(firebaseUser.uid).downloadUrl.addOnCompleteListener {
-                                        linkImage = it.result.toString()
-                                    }
+                        override fun onComplete(task: Task<UploadTask.TaskSnapshot>) {
+                            if (task.isSuccessful) {
+                                storageReference.child(firebaseUser.uid).downloadUrl.addOnCompleteListener {
+                                    linkImage = it.result.toString()
                                 }
                             }
-                        })
+                        }
+                    })
             }
         }
 
@@ -115,10 +115,12 @@ class FragmentProfile : Fragment() {
                 edtUsername.error = " không hợp lệ"
             } else if (old.isEmpty()) {
                 edtOld.error = "không được để trống"
+            } else if (phone.isEmpty()) {
+                edtPhone.error = "không được để trống"
+            } else if (phone.length <= 9) {
+                edtPhone.error = "không đúng định dạng"
             } else if (location.isEmpty()) {
                 edtLocation.error = "không được để trống"
-            } else if (phone.isEmpty() || phone.length <= 9) {
-                edtPhone.error = "không được hợp lệ"
             } else if (linkImage.isEmpty()) {
                 Toast.makeText(requireContext(), "Vui lòng chọn hình ảnh", Toast.LENGTH_SHORT)
                     .show()
